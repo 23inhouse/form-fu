@@ -1,0 +1,9 @@
+<%%- uni_form_for(@<%= singular_name %>) do |f| -%>
+  <%%= error_messages_for :<%= singular_name %> %>
+  <%%= render :partial => 'fields', :locals => {:f => f} %>
+  <%%- f.buttons do -%>
+    <%%= f.submit "Create" %>
+  <%%- end -%>
+<%%- end -%>
+
+<p><%%= link_to 'Back', <%= plural_name %>_path %></p>

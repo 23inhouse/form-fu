@@ -1,0 +1,20 @@
+/* These are needed to display the date_select and form-fu multi-radios and multi-checkboxes */
+
+.uniForm .form_fu_radios input { margin-bottom: 0.5em; }
+.uniForm .form_fu_radios label { display: inline; float: none; }
+.uniForm .form_fu_checks input { margin-bottom: 0.5em; }
+.uniForm .form_fu_checks label { display: inline; float: none; }
+
+.uniForm .date_select select { width: 17.5%; }
+.uniForm .inlineLabels .date_select select { width: 30.5%; margin-right: 1em;}
+
+/* You don't need these, they are here to tune up the page */
+body{ margin:30px auto; width:75%; font: normal normal 12px/1.8em "Lucida Sans Unicode", "Lucida Grande", "Trebuchet MS", sans-serif; }
+  a img{ border:none; }
+
+a:link, a:visited{ color: #006280; }
+a:hover{ text-decoration: none; }
+
+.uniForm{ padding: 20px; background: #F2FAFF; -webkit-border-radius: 7px; }
+    
+  .uniForm .inlineLabels .ctrlHolder .multiField.phoneNum .blockLabel{ width: auto; }

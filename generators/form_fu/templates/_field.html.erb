@@ -1,0 +1,21 @@
+<%%- if options[:inline_labels] == true -%>
+<div class="ctrlHolder inlineLabels<%%= ' error' unless field_error.blank? %>">
+  <%%= field_label %>
+  <div class="multiField">
+    <%%= field_error %>
+    <%%= field_input %>
+  </div>
+  <%%- unless options[:hint].blank? -%>
+  <p class="formHint"><span><em>*</em> <%%= options[:hint] %></span></p>
+  <%%- end -%>
+</div>
+<%%- else -%>
+<div class="ctrlHolder<%%= ' error' unless field_error.blank? %>">
+  <%%= field_label %>
+  <%%= field_error %>
+  <%%= field_input %>
+  <%%- unless options[:hint].blank? -%>
+  <p class="formHint"><span><em>*</em> <%%= options[:hint] %></span></p>
+  <%%- end -%>
+</div>
+<%%- end -%>
