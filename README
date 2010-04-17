@@ -1,0 +1,199 @@
+= FormFu
+
+The default rails form builder is great but it could be so much more.
+This plugin makes magic happen.  Did you ever just want to do this is a view:
+
+  <%= f.text_field :name %>
+
+... and have all the tedious form html (paragraphs, lists or tables) automagically wrap around it?
+
+Like this:
+
+  <p>
+    <label>Name:</label><br/>
+    <input name="post[name]" id="post_name"/>
+  </p>
+  
+Well now you can. By installing this plugin and adding the partial <tt>app/views/form_fu/uni/_field.html.erb</tt>:
+
+  <p>
+    <label><%= field_label %></label><br/>
+    <%= field_input %>
+  </p>
+
+== Example
+
+Use the default form_fu builder or your custom_form builders just like a normal form builder,
+except don't add any markup (unless you want to).
+
+  <% uni_form_for @post do |f| %>
+  
+    <% f.inputs do %>
+      <%= f.text_field :title %>
+      <%= f.text_area :body %>
+      <%= f.select :section_normal, choices %>
+      <%= f.radio_buttons :section_as_radio_buttons, choices %>
+      <%= f.check_boxes :section_as_check_boxes, choices %>
+    <% end %>
+    
+    <% f.buttons do %>
+      <%= f.sumbit 'Save' %>
+    <% end %>
+    
+  <% end %>
+
+Yeah, the form builder will render all the common markup for you.
+
+You're done.
+
+<b>Note:</b> I added the methods radio_buttons and check_boxes to the list of form helpers.
+== Installation
+
+The gem is NOT YET hosted on gemcutter, so *if you haven't already*, add it as a gem source:
+
+  ./script/plugin install http://github.com/23inhouse/form_fu
+
+Run this next to generate the form_fu methods, it will copy the form_fu wrapper files into
+<tt>app/views/form_fu</tt>.
+
+  ./script/generate form_fu
+
+* <tt>app/views/form_fu/uni/_fieldset.html.erb</tt> - the default fieldset wrapper this goes around the fields helper
+* <tt>app/views/form_fu/uni/_field.html.erb</tt> - the default field wrapper this goes around the individual field helpers
+* <tt>app/views/form_fu/uni/_button.html.erb</tt> - the default button wrapper this goes around the buttons helper
+
+These files will be used when you call uni_form_for.  You can create your own custom builders by putting
+other folders in the form_fu folder.  So if you add a folder called 'my_custom' you'll get the methods
+<tt>my_custom_form_for</tt>, <tt>my_custom_fields_for</tt>, etc.
+
+You can also add other partials, for example if you added the partial <tt>app/views/form_fu/uni/_text_field.html.erb</tt>, then all the text_fields will use this partial
+by default.  You can override the default behaviour with the <tt>:builder</tt> option (see below).
+
+<b>Note:</b> You must restart the rails app after adding new folders, but not new files.
+
+There's also the form_fu_scaffold generator, it's just like the default scaffold generator except the forms are streamlined for form_fu builders
+
+  script/generate form_fu_scaffold ...
+
+
+== Usage
+
+=== Options
+
+==== Label
+You can pass <tt>:label => 'my_label'</tt>, this is a quick way to change the label, but it wont change the label
+in the validation error messages.  If you want to do that, it's better use I18n, so instead of:
+
+  <tt><%= f.text_field(:title, :label => 'my_label') %></tt>
+  
+Use this:
+
+<tt>config/locales/en.yml</tt>
+
+  en:
+    activerecord:
+      attributes:
+        blog:
+          title: "my_label"
+
+==== Required
+You can add the little star to the labels by passing <tt>:required => true</tt>.  If you add the plugin
+http://github.com/redinger/validation_reflection, the forms will automatically add the star when the
+validates_presence_of is set.
+
+==== Report
+You can pass <tt>:report => true</tt> and you get get an instant view page.
+
+This will turn all the fields in the form into plain text view
+
+  <tt><%- uni_form_for(@blog, :report => true) do |f| -%></tt>
+
+This will turn all the fields in the fieldset into plain text.
+<b>Note:</b> you can have more than one fieldset.
+
+  <tt><%- f.fields(:report => true) do -%></tt>
+
+This will make the individual field plain text
+
+  <tt><%= f.text_field(:title, :report => true) %></tt>
+
+At any stage you can set <tt>:report => false</tt>, if you want one or more fields editable.
+
+==== Disabled
+You can do the same with disabled, the fields will be disabled instead of plain text.
+
+==== Builder
+
+You can specify which builder to use per helper method:
+
+  <tt><%= f.text_field :title, :builder => ['field'|'/builder/field'|Builder] %></tt>
+
+* '<tt>field</tt>' - will look in the current form builder folder for the partial 'field'
+* '<tt>/my_custom/field</tt>' - will look in the form_fu folder if it starts with '/'
+* <tt>FormFu::MyCustomFormBuilder</tt> - will look for files in the 'my_custom' folder
+
+<b>Note:</b> This wont work with builders defined using builders defined in the lib folder (see below).
+
+==== Other options
+You can pass any options to the helper methods.  These will become availble in the field partials as a
+hash named content.
+
+Example:
+  <tt><%= f.text_field(:title, :hint => 'This is a field hint', :anything => 'anything') %></tt>
+
+Will give you:
+
+  content = {
+    :hint => 'This is a field hint',
+    :anything => 'anything'
+  }
+
+=== Validation Errors Messages
+If you want to complete control over the messages, start the :message value with a hat '^'.  This will drop the label
+name from the error messages that are inline.  To change the the messages in the standard rails error_messages_for
+method you can use the plugin http://github.com/gumayunov/custom-err-msg
+
+=== One more thing...
+
+You can also create your own ultra custom <tt>FormBuilder</tt>s by adding this to your project.
+
+<tt>config/enviroment.rb</tt>
+
+  require 'my_ultra_custom_form_builder'
+
+<tt>lib/my_ultra_custom_form_builder.rb</tt>
+
+  module FormFu
+    class MyUltraCustomFormBuilder < ActionView::Helpers::FormBuilder
+      include FormFu::FormFuBuilderMethods
+  
+    private
+      def fieldset_wrapper(fields, options = {}, html_options = {})
+        @template.content_tag(:div, fields)
+      end
+    
+      def field_wrapper(method, options = {}, field_tag = nil)
+        @template.content_tag(:p, field_label(method)+'<br/>'+field_tag)
+      end
+    
+      def buttonset_wrapper(buttons, options = {}, html_options = {})
+        @template.content_tag(:div, buttons)
+      end
+    end
+  end
+
+<b>Note:</b> You must restart the app server when you add your own ultra custom form builders
+
+
+=== Authors and credits
+
+Authors: Benjamin Ward Lewis
+
+Thanks to the writers of formtastic for lots of great ideas.
+http://github.com/justinfrench/formtastic
+
+Thanks to Michael Schuerig & Christopher Redinger for validation reflection.
+http://github.com/redinger/validation_reflection
+
+Thanks to Victor Gumayunov for custom error messages.
+http://github.com/gumayunov/custom-err-msg
